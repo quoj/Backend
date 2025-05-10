@@ -1,6 +1,7 @@
 package com.example.api.dto;
 
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 public class ScheduleDTO {
@@ -8,7 +9,7 @@ public class ScheduleDTO {
     private Long classId;
     private String subjectId;
     private Long teacherId;
-    private Integer dayOfWeek;
-    private String startTime;
-    private String endTime;
+    private String dayOfWeek;  // Đổi từ Integer sang String (hoặc LocalDate)
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
 }

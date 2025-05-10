@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MessageService {
@@ -43,12 +42,13 @@ public class MessageService {
 
     // 🔹 Thêm tin nhắn mới
     public Message createMessage(Message message) {
+        message.setId(null); // ✅ Bắt buộc để tránh lỗi khi gửi ID từ client
         message.setCreatedAt(LocalDateTime.now()); // Gán thời gian tạo tin nhắn
         message.setStatus("Chưa xác nhận"); // Mặc định là chưa xác nhận
         return messageRepository.save(message);
     }
 
-    // 🔹 Cập nhật tin nhắn (VD: thay đổi nội dung, hình ảnh)
+    // 🔹 Cập nhật nội dung hoặc ảnh của tin nhắn
     public Message updateMessage(Long id, Message updatedMessage) {
         return messageRepository.findById(id).map(message -> {
             message.setContent(updatedMessage.getContent());

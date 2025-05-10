@@ -1,3 +1,4 @@
+// src/main/java/com/example/api/dto/AttendanceDTO.java
 package com.example.api.dto;
 
 import lombok.AllArgsConstructor;
@@ -12,6 +13,8 @@ import java.time.LocalDateTime;
 public class AttendanceDTO {
     private Long id;
     private Long studentId;
+    private Integer classId;      // giữ như cũ
+    private String studentName;   // ✨ thêm dòng này
     private String status;
     private LocalDateTime date;
     private String note;

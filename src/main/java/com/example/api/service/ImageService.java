@@ -1,38 +1,33 @@
 package com.example.api.service;
 
+import com.example.api.dto.ImageDTO;
 import com.example.api.model.Image;
 import com.example.api.repository.ImageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ImageService {
 
-    private final ImageRepository imageRepository;
+    @Autowired
+    private ImageRepository imageRepository;
 
-    public ImageService(ImageRepository imageRepository) {
-        this.imageRepository = imageRepository;
+    public List<Image> getAllImages() {
+        return imageRepository.findAll();
     }
 
-    // Phương thức upload ảnh và trả về Image entity
-    public Image uploadImage(Long announcementId, MultipartFile image) throws IOException {
-        // Tạo một thực thể Image
-        Image imageEntity = new Image();
-        imageEntity.setAnnouncementId(announcementId);
-        imageEntity.setImageData(image.getBytes());  // Lưu ảnh dưới dạng byte array
-
-        return imageRepository.save(imageEntity); // Lưu ảnh vào cơ sở dữ liệu
+    public Optional<Image> getImageById(Long id) {
+        return imageRepository.findById(id);
     }
 
-    // Phương thức lấy ảnh theo ID
-    public Image getImage(Long imageId) {
-        Optional<Image> imageOptional = imageRepository.findById(imageId);
-        if (imageOptional.isEmpty()) {
-            throw new RuntimeException("Không tìm thấy ảnh!");
-        }
-        return imageOptional.get();
+    public Image saveImage(Image image) {
+        return imageRepository.save(image);
+    }
+
+    public void deleteImage(Long id) {
+        imageRepository.deleteById(id);
     }
 }

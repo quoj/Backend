@@ -2,14 +2,18 @@ package com.example.api.controller;
 
 import com.example.api.model.Feedback;
 import com.example.api.service.FeedbackService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/feedbacks")
+@CrossOrigin(origins = "*")
 public class FeedbacksController {
 
     private final FeedbackService feedbackService;
@@ -34,10 +38,23 @@ public class FeedbacksController {
 
     // 🔹 API thêm góp ý mới
     @PostMapping
-    public ResponseEntity<Feedback> createFeedback(@RequestBody Feedback feedback) {
-        Feedback savedFeedback = feedbackService.saveFeedback(feedback);
-        return ResponseEntity.ok(savedFeedback);
+    public ResponseEntity<?> createFeedback(@RequestBody Feedback feedback) {
+        try {
+            // Gán giá trị cho createdAt nếu chưa có
+            if (feedback.getCreatedAt() == null) {
+                feedback.setCreatedAt(LocalDateTime.now());
+            }
+            Feedback savedFeedback = feedbackService.saveFeedback(feedback);
+            return ResponseEntity.ok(savedFeedback);
+        } catch (Exception e) {
+            // Trả về lỗi chi tiết
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Lỗi khi lưu góp ý", "details", e.getMessage()));
+        }
     }
+
+
 
     // 🔹 API cập nhật trạng thái góp ý
     @PutMapping("/{id}/status")

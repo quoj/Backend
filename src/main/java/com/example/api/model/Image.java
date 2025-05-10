@@ -12,11 +12,16 @@ public class Image {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long announcementId; // ID của thông báo liên quan
+    @Column(name = "announcement_id", nullable = false)
+    private Long announcementId;
+
+    @Column(name = "class_id", nullable = false)
+    private Integer classId;
 
     @Lob
-    @Column(name = "image_data")
-    private byte[] imageData; // Dữ liệu ảnh lưu dưới dạng byte array
+    @Column(name = "image_data", nullable = false)
+    private byte[] imageData;
 
-    // Bạn có thể thêm thêm các thuộc tính khác nếu cần (ví dụ: tên ảnh, loại ảnh...)
+    @Column(name = "image_url", length = 255, nullable = true)
+    private String imageUrl;
 }

@@ -24,6 +24,14 @@ public class SecurityConfig {
                         .requestMatchers("/study_results/**").permitAll()
                         .requestMatchers("/tuitions/**").permitAll()
                         .requestMatchers("/health/**").permitAll()
+                        .requestMatchers("/menus/**").permitAll()
+                        .requestMatchers("/leave_requests/**").permitAll()
+                        .requestMatchers("/comments/**").permitAll()
+                        .requestMatchers("/students/**").permitAll()
+                        .requestMatchers("/class_diaries/**").permitAll()
+                        .requestMatchers("/notifications/**").permitAll()
+                        .requestMatchers("/parents/**").permitAll()
+                        .requestMatchers("/teachers/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

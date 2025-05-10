@@ -2,11 +2,13 @@ package com.example.api.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "schedules")
 @Data
-public class Schedule   {
+public class Schedule {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -15,18 +17,17 @@ public class Schedule   {
     private Long classId;
 
     @Column(name = "subject_id")
-    private String  subjectId;
+    private String subjectId;
 
     @Column(name = "teacher_id")
     private Long teacherId;
 
     @Column(name = "day_of_week")
-    private Integer dayOfWeek;
+    private String dayOfWeek;  // Đổi từ Integer sang String (hoặc LocalDate)
 
     @Column(name = "start_time")
-    private String startTime;
+    private LocalDateTime startTime;
 
     @Column(name = "end_time")
-    private String endTime;
-
+    private LocalDateTime endTime;
 }

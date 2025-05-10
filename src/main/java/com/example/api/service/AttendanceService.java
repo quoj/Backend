@@ -1,8 +1,11 @@
+// src/main/java/com/example/api/service/AttendanceService.java
 package com.example.api.service;
 
 import com.example.api.dto.AttendanceDTO;
 import com.example.api.model.Attendance;
+import com.example.api.model.Student;
 import com.example.api.repository.AttendanceRepository;
+import com.example.api.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,44 +19,61 @@ public class AttendanceService {
     @Autowired
     private AttendanceRepository attendanceRepository;
 
-    // 🔹 Lấy danh sách điểm danh
+    @Autowired
+    private StudentRepository studentRepository;  // ✨ thêm dòng này
+
     public List<AttendanceDTO> getAllAttendances() {
-        return attendanceRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
+        return attendanceRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    // 🔹 Lấy chi tiết điểm danh theo ID
     public Optional<AttendanceDTO> getAttendanceById(Long id) {
         return attendanceRepository.findById(id).map(this::convertToDTO);
     }
 
-    // ✅ Sửa lỗi: Thêm phương thức createAttendance
-    public AttendanceDTO createAttendance(AttendanceDTO attendanceDTO) {
-        Attendance attendance = convertToEntity(attendanceDTO);
-        Attendance savedAttendance = attendanceRepository.save(attendance);
-        return convertToDTO(savedAttendance);
+    public AttendanceDTO createAttendance(AttendanceDTO dto) {
+        Attendance a = convertToEntity(dto);
+        Attendance saved = attendanceRepository.save(a);
+        return convertToDTO(saved);
     }
 
-    // 🔹 Cập nhật trạng thái điểm danh
     public Optional<AttendanceDTO> updateAttendanceStatus(Long id, String status) {
-        return attendanceRepository.findById(id).map(attendance -> {
-            attendance.setStatus(status);
-            attendanceRepository.save(attendance);
-            return convertToDTO(attendance);
+        return attendanceRepository.findById(id).map(att -> {
+            att.setStatus(status);
+            attendanceRepository.save(att);
+            return convertToDTO(att);
         });
     }
 
-    // 🔹 Xóa điểm danh
     public void deleteAttendance(Long id) {
         attendanceRepository.deleteById(id);
     }
 
-    // ✅ Chuyển đổi từ Model -> DTO
-    private AttendanceDTO convertToDTO(Attendance attendance) {
-        return new AttendanceDTO(attendance.getId(), attendance.getStudentId(), attendance.getStatus(), attendance.getDate(), attendance.getNote());
+    private AttendanceDTO convertToDTO(Attendance a) {
+        // tìm tên học sinh từ studentRepository
+        String name = studentRepository.findById(a.getStudentId())
+                .map(Student::getName)
+                .orElse("Không rõ");
+        return new AttendanceDTO(
+                a.getId(),
+                a.getStudentId(),
+                a.getClassId(),
+                name,                    // ✨ truyền studentName
+                a.getStatus(),
+                a.getDate(),
+                a.getNote()
+        );
     }
 
-    // ✅ Chuyển đổi từ DTO -> Model
-    private Attendance convertToEntity(AttendanceDTO attendanceDTO) {
-        return new Attendance(attendanceDTO.getId(), attendanceDTO.getStudentId(), attendanceDTO.getStatus(), attendanceDTO.getDate(), attendanceDTO.getNote());
+    private Attendance convertToEntity(AttendanceDTO dto) {
+        return Attendance.builder()
+                .id(dto.getId())
+                .studentId(dto.getStudentId())
+                .classId(dto.getClassId())
+                .status(dto.getStatus())
+                .date(dto.getDate())
+                .note(dto.getNote())
+                .build();
     }
 }

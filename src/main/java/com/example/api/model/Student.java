@@ -1,43 +1,45 @@
 package com.example.api.model;
 
 import jakarta.persistence.*;
-
-import java.util.List;
+import lombok.Data;
 
 @Entity
+@Table(name = "students")
+@Data
 public class Student {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name; // Ví dụ, tên học sinh
+    private String name;
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)  // Liên kết ngược từ Student đến StudyComment
-    private List<StudyComment> studyComments;
+    private String dob;
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    private String address;
+
+    private String phone;
+
+    private String email;
+
+    @Column(name = "class_id")
+    private Integer classId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "attendance_status")
+    private AttendanceStatus attendanceStatus;
+
+    public enum Gender {
+        Nam,
+        Nu,
+        Khac
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<StudyComment> getStudyComments() {
-        return studyComments;
-    }
-
-    public void setStudyComments(List<StudyComment> studyComments) {
-        this.studyComments = studyComments;
+    public enum AttendanceStatus {
+        present,
+        absent
     }
 }

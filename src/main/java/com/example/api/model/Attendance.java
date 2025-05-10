@@ -1,3 +1,4 @@
+// src/main/java/com/example/api/model/Attendance.java
 package com.example.api.model;
 
 import jakarta.persistence.*;
@@ -20,8 +21,11 @@ public class Attendance {
     @Column(name = "student_id", nullable = false)
     private Long studentId;
 
+    @Column(name = "class_id")          // nếu bạn đã thêm cột này rồi
+    private Integer classId;
+
     @Column(name = "status", nullable = false)
-    private String status; // present, absent, late
+    private String status;
 
     @Column(name = "date", nullable = false)
     private LocalDateTime date;
