@@ -2,59 +2,66 @@ package com.example.api.controller;
 
 import com.example.api.dto.StudentDTO;
 import com.example.api.model.Student;
-import com.example.api.model.Student.AttendanceStatus;
 import com.example.api.service.StudentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
+import java.util.Optional;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/students")
 public class StudentController {
 
-    private final StudentService service;
+    private final StudentService studentService;
 
-    public StudentController(StudentService service) {
-        this.service = service;
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
     }
 
-    @GetMapping
-    public List<Student> getAll() {
-        return service.getAllStudents();
+    @PostMapping("/add")
+    public ResponseEntity<Student> addStudent(@RequestBody StudentDTO studentDTO) {
+        Student saveStudent = studentService.saveStudent(studentDTO);
+        return ResponseEntity.ok(saveStudent);
     }
 
+    @GetMapping("")
+    public List<Student> getAllStudents() {
+        return studentService.getAllStudents();
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+        try {
+            studentService.deleteStudentById(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Student> updateStudent(@PathVariable Long id, @RequestBody StudentDTO studentDTO) {
+        Optional<Student> updatedStudent = studentService.updateStudent(id, studentDTO);
+        return updatedStudent
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
     @GetMapping("/{id}")
-    public ResponseEntity<Student> getById(@PathVariable Long id) {
-        Student student = service.getStudentById(id);
-        return ResponseEntity.ok(student);
+    public ResponseEntity<?> getStudentById(@PathVariable Long id) {
+        try {
+            Student student = studentService.getStudentById(id);
+            if (student != null) {
+                return ResponseEntity.ok(student);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy học sinh với ID: " + id);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi: " + e.getMessage());
+        }
     }
 
-    @PostMapping
-    public ResponseEntity<Student> create(@RequestBody StudentDTO dto) {
-        Student student = service.createStudent(dto);
-        return ResponseEntity.ok(student);
-    }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Student> update(@PathVariable Long id, @RequestBody StudentDTO dto) {
-        Student student = service.updateStudent(id, dto);
-        return ResponseEntity.ok(student);
-    }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.deleteStudent(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    // API cập nhật trạng thái điểm danh (present / absent)
-    @PatchMapping("/{id}/attendance-status")
-    public ResponseEntity<Student> updateAttendanceStatus(
-            @PathVariable Long id,
-            @RequestParam("status") AttendanceStatus status
-    ) {
-        Student student = service.updateAttendanceStatus(id, status);
-        return ResponseEntity.ok(student);
-    }
 }

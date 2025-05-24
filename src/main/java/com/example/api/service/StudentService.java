@@ -2,60 +2,92 @@ package com.example.api.service;
 
 import com.example.api.dto.StudentDTO;
 import com.example.api.model.Student;
-import com.example.api.model.Student.AttendanceStatus;
+import com.example.api.model.SchoolClass;
+
 import com.example.api.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StudentService {
 
-    private final StudentRepository repository;
+    private final StudentRepository studentRepository;
 
-    public StudentService(StudentRepository repository) {
-        this.repository = repository;
+    public StudentService(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
+    }
+
+    public Student saveStudent(StudentDTO studentDTO) {
+        Student student = new Student();
+        student.setName(studentDTO.getName());
+        student.setGender(studentDTO.getGender());
+        student.setAddress(studentDTO.getAddress());
+        student.setEmail(studentDTO.getEmail());
+        student.setDob(studentDTO.getDob());
+        student.setDad(studentDTO.getDad());
+        student.setMom(studentDTO.getMom());
+        student.setPhoneDad(studentDTO.getPhoneDad());
+        student.setPhoneMom(studentDTO.getPhoneMom());
+
+        // Set Class cho Student nếu classId khác null
+        if (studentDTO.getClassId() != null) {
+            SchoolClass clazz = new SchoolClass();
+            clazz.setId(studentDTO.getClassId());
+            student.setClassId(clazz);
+        } else {
+            student.setClassId(null);
+        }
+
+        return studentRepository.save(student);
     }
 
     public List<Student> getAllStudents() {
-        return repository.findAll();
-    }
-
-    public Student getStudentById(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Student with id " + id + " not found"));
-    }
-
-    public Student createStudent(StudentDTO dto) {
-        Student student = new Student();
-        mapDtoToEntity(dto, student);
-        return repository.save(student);
-    }
-
-    public Student updateStudent(Long id, StudentDTO dto) {
-        Student student = getStudentById(id);
-        mapDtoToEntity(dto, student);
-        return repository.save(student);
+        return studentRepository.findAll();
     }
 
     public void deleteStudent(Long id) {
-        repository.deleteById(id);
+        studentRepository.deleteById(id);
     }
 
-    public Student updateAttendanceStatus(Long id, AttendanceStatus status) {
-        Student student = getStudentById(id);
-        student.setAttendanceStatus(status);
-        return repository.save(student);
+
+    public void deleteStudentById(Long id) {
+        if (studentRepository.existsById(id)) {
+            studentRepository.deleteById(id);
+        } else {
+            throw new RuntimeException("Student not found with id " + id);
+        }
     }
 
-    private void mapDtoToEntity(StudentDTO dto, Student student) {
-        student.setName(dto.getName());
-        student.setDob(dto.getDob());
-        student.setGender(dto.getGender());
-        student.setAddress(dto.getAddress());
-        student.setPhone(dto.getPhone());
-        student.setEmail(dto.getEmail());
-        student.setClassId(dto.getClassId());
-        student.setAttendanceStatus(dto.getAttendanceStatus());
+    public Optional<Student> updateStudent(Long id, StudentDTO studentDTO) {
+        return studentRepository.findById(id).map(student -> {
+            student.setName(studentDTO.getName());
+            student.setGender(studentDTO.getGender());
+            student.setAddress(studentDTO.getAddress());
+            student.setEmail(studentDTO.getEmail());
+            student.setDob(studentDTO.getDob());
+            student.setDad(studentDTO.getDad());
+            student.setMom(studentDTO.getMom());
+            student.setPhoneDad(studentDTO.getPhoneDad());
+            student.setPhoneMom(studentDTO.getPhoneMom());
+
+            if (studentDTO.getClassId() != null) {
+                SchoolClass clazz = new SchoolClass();
+                clazz.setId(studentDTO.getClassId());
+                student.setClassId(clazz);
+            } else {
+                student.setClassId(null);
+            }
+
+            return studentRepository.save(student);
+        });
     }
+
+    public Student getStudentById(Long id) {
+        return studentRepository.findById(id).orElse(null);
+    }
+
+
+
 }

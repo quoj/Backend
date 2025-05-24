@@ -33,4 +33,7 @@ public class Tuition {
     // tuition_date: date, có thể null
     @Column(name = "tuition_date")
     private LocalDate tuitionDate;
+
+    @Column(name = "class_id")
+    private Long classId;
 }

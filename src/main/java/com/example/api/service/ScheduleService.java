@@ -13,59 +13,65 @@ import java.util.stream.Collectors;
 @Service
 public class ScheduleService {
 
-    @Autowired
-    private ScheduleRepository scheduleRepository;
+    private final ScheduleRepository scheduleRepository;
 
-    // Chuyển đổi từ Entity sang DTO
-    private ScheduleDTO convertToDTO(Schedule schedule) {
-        ScheduleDTO dto = new ScheduleDTO();
-        dto.setId(schedule.getId());
-        dto.setClassId(schedule.getClassId());
-        dto.setSubjectId(schedule.getSubjectId());
-        dto.setTeacherId(schedule.getTeacherId());
-        dto.setDayOfWeek(schedule.getDayOfWeek());
-        dto.setStartTime(schedule.getStartTime());
-        dto.setEndTime(schedule.getEndTime());
-        return dto;
+    public ScheduleService(ScheduleRepository scheduleRepository) {
+        this.scheduleRepository = scheduleRepository;
     }
 
-    // Lấy tất cả thời khóa biểu
-    public List<ScheduleDTO> getAllSchedules() {
-        return scheduleRepository.findAll().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    // Lưu hoặc cập nhật lịch học
+    public Schedule saveSchedule(Schedule schedule) {
+        return scheduleRepository.save(schedule);
     }
 
-    // Lấy thời khóa biểu theo ID
-    public Optional<ScheduleDTO> getScheduleById(Long id) {
-        return scheduleRepository.findById(id).map(this::convertToDTO);
+    // Lấy tất cả lịch học cho lớp học và ngày cụ thể
+//    public List<ScheduleDTO> getSchedulesByClassAndDay(Long classId, String dayOfWeek) {
+//        List<Schedule> schedules = scheduleRepository. findByClazzIdAndDayOfWeek(classId, dayOfWeek);
+//
+//        return schedules.stream().map(schedule -> {
+//            ScheduleDTO scheduleDTO = new ScheduleDTO();
+//            scheduleDTO.setId(schedule.getId());
+//            scheduleDTO.setClassId(schedule.getClazz().getId());
+//            scheduleDTO.setSubjectId(schedule.getSubjectId());
+//            scheduleDTO.setTeacherId(schedule.getTeacherId());
+//            scheduleDTO.setDayOfWeek(schedule.getDayOfWeek());
+//            scheduleDTO.setStartTime(schedule.getStartTime());
+//            scheduleDTO.setEndTime(schedule.getEndTime());
+//            return scheduleDTO;
+//        }).collect(Collectors.toList());
+//    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Lấy lịch học theo ID
+    public Optional<Schedule> getScheduleById(Long id) {
+        return scheduleRepository.findById(id);
     }
 
-    // Thêm thời khóa biểu mới
-    public ScheduleDTO addSchedule(Schedule schedule) {
-        Schedule savedSchedule = scheduleRepository.save(schedule);
-        return convertToDTO(savedSchedule);
+    // Xóa lịch học theo ID
+    public void deleteSchedule(Long id) {
+        scheduleRepository.deleteById(id);
     }
 
-    // Cập nhật thời khóa biểu
-    public ScheduleDTO updateSchedule(Long id, Schedule updatedSchedule) {
-        return scheduleRepository.findById(id).map(schedule -> {
-            schedule.setClassId(updatedSchedule.getClassId());
-            schedule.setSubjectId(updatedSchedule.getSubjectId());
-            schedule.setTeacherId(updatedSchedule.getTeacherId());
-            schedule.setDayOfWeek(updatedSchedule.getDayOfWeek());
-            schedule.setStartTime(updatedSchedule.getStartTime());
-            schedule.setEndTime(updatedSchedule.getEndTime());
-            return convertToDTO(scheduleRepository.save(schedule));
-        }).orElse(null);
+    // Lấy tất cả lịch học
+    public List<Schedule> getAllSchedules() {
+        return scheduleRepository.findAll();
     }
 
-    // Xóa thời khóa biểu theo ID
-    public boolean deleteSchedule(Long id) {
-        if (scheduleRepository.existsById(id)) {
-            scheduleRepository.deleteById(id);
-            return true;
-        }
-        return false;
+    public List<Schedule> saveAllSchedules(List<Schedule> schedules) {
+        return scheduleRepository.saveAll(schedules);
+    }
+    public void deleteSchedulesByClassId(Long classId) {
+        scheduleRepository.deleteByClazzId(classId);
     }
 }

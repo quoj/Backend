@@ -4,6 +4,7 @@ import com.example.api.dto.ScheduleDTO;
 import com.example.api.model.Schedule;
 import com.example.api.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,44 +12,90 @@ import java.util.List;
 import java.util.Optional;
 
 @CrossOrigin(origins = "*")
+
+
 @RestController
-@RequestMapping("schedules")
+@RequestMapping("/schedules")
 public class ScheduleController {
 
-    @Autowired
-    private ScheduleService scheduleService;
+    private final ScheduleService scheduleService;
 
-    // Lấy tất cả thời khóa biểu
+    public ScheduleController(ScheduleService scheduleService) {
+        this.scheduleService = scheduleService;
+    }
+
+    // Lấy tất cả lịch học
     @GetMapping
-    public ResponseEntity<List<ScheduleDTO>> getAllSchedules() {
-        List<ScheduleDTO> schedules = scheduleService.getAllSchedules();
+    public ResponseEntity<List<Schedule>> getAllSchedules() {
+        List<Schedule> schedules = scheduleService.getAllSchedules();
         return ResponseEntity.ok(schedules);
     }
 
-    // Lấy thời khóa biểu theo ID
+    // Thêm mới lịch học
+    @PostMapping("/add")
+    public ResponseEntity<Schedule> addSchedule(@RequestBody Schedule schedule) {
+        Schedule savedSchedule = scheduleService.saveSchedule(schedule);
+        return ResponseEntity.ok(savedSchedule);
+    }
+
+    // Lấy lịch học theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<ScheduleDTO> getScheduleById(@PathVariable Long id) {
-        Optional<ScheduleDTO> schedule = scheduleService.getScheduleById(id);
-        return schedule.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<Schedule> getScheduleById(@PathVariable Long id) {
+        return scheduleService.getScheduleById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Thêm mới thời khóa biểu
-    @PostMapping
-    public ResponseEntity<ScheduleDTO> addSchedule(@RequestBody Schedule schedule) {
-        ScheduleDTO newSchedule = scheduleService.addSchedule(schedule);
-        return ResponseEntity.ok(newSchedule);
-    }
-
-    // Cập nhật thời khóa biểu
+    // Cập nhật lịch học theo ID
     @PutMapping("/{id}")
-    public ResponseEntity<ScheduleDTO> updateSchedule(@PathVariable Long id, @RequestBody Schedule updatedSchedule) {
-        ScheduleDTO schedule = scheduleService.updateSchedule(id, updatedSchedule);
-        return schedule != null ? ResponseEntity.ok(schedule) : ResponseEntity.notFound().build();
+    public ResponseEntity<Schedule> updateSchedule(@PathVariable Long id, @RequestBody Schedule schedule) {
+        Optional<Schedule> existingSchedule = scheduleService.getScheduleById(id);
+        if (existingSchedule.isPresent()) {
+            schedule.setId(id);
+            Schedule updatedSchedule = scheduleService.saveSchedule(schedule);
+            return ResponseEntity.ok(updatedSchedule);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    // Xóa thời khóa biểu
+    // Xóa lịch học theo ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSchedule(@PathVariable Long id) {
-        return scheduleService.deleteSchedule(id) ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+        if (scheduleService.getScheduleById(id).isPresent()) {
+            scheduleService.deleteSchedule(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    //Lấy tất cả lịch học theo classId và dayOfWeek (truyền dayOfWeek qua query param)
+//    @GetMapping("/class/{classId}")
+//    public ResponseEntity<List<ScheduleDTO>> getSchedulesByClassAndDay(
+//            @PathVariable Long classId,
+//            @RequestParam String dayOfWeek) {
+//        List<ScheduleDTO> schedules = scheduleService.getSchedulesByClassAndDay(classId, dayOfWeek);
+//        return ResponseEntity.ok(schedules);
+//    }
+
+
+
+
+
+
+
+
+
+
+    @PostMapping("/add-bulk")
+    public ResponseEntity<?> addBulkSchedules(@RequestBody List<Schedule> schedules) {
+        List<Schedule> savedSchedules = scheduleService.saveAllSchedules(schedules);
+        return ResponseEntity.status(HttpStatus.OK).body(savedSchedules);
+    }
+    @DeleteMapping("/class/{classId}")
+    public ResponseEntity<Void> deleteSchedulesByClassId(@PathVariable Long classId) {
+        scheduleService.deleteSchedulesByClassId(classId);
+        return ResponseEntity.noContent().build();
     }
 }

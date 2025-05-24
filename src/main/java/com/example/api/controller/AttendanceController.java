@@ -1,54 +1,59 @@
-package com.example.api.controller;
+    package com.example.api.controller;
 
-import com.example.api.dto.AttendanceDTO;
-import com.example.api.service.AttendanceService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+    import com.example.api.dto.AttendanceDTO;
+    import com.example.api.model.Attendance;
+    import com.example.api.repository.AttendanceRepository;
+    import com.example.api.service.AttendanceService;
+    import org.springframework.http.HttpStatus;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+    import java.time.LocalDate;
+    import java.time.LocalDateTime;
+    import java.time.format.DateTimeParseException;
+    import java.util.List;
+    import java.util.stream.Collectors;
 
-@RestController
-@RequestMapping("/attendance")
-public class AttendanceController {
+    @RestController
+    @RequestMapping("/attendances")
+    public class AttendanceController {
+        private final AttendanceService attendanceService;
 
-    private final AttendanceService attendanceService;
+        public AttendanceController(AttendanceService attendanceService) {
+            this.attendanceService = attendanceService;
+        }
 
-    public AttendanceController(AttendanceService attendanceService) {
-        this.attendanceService = attendanceService;
+        // ✅ GET all hoặc theo ngày (dùng LocalDate)
+        @GetMapping
+        public ResponseEntity<?> getAllAttendances(@RequestParam(required = false) String date) {
+            try {
+                if (date != null) {
+                    // Parse từ String về LocalDate
+                    LocalDate localDate = LocalDate.parse(date); // format yyyy-MM-dd
+                    List<Attendance> attendances = attendanceService.getAttendancesByDate(localDate);
+                    return ResponseEntity.ok(attendances);
+                } else {
+                    return ResponseEntity.ok(attendanceService.getAllAttendances());
+                }
+            } catch (DateTimeParseException e) {
+                return ResponseEntity.badRequest().body("Sai định dạng ngày! Dùng định dạng yyyy-MM-dd");
+            }
+        }
+
+        // POST thêm mới điểm danh
+        @PostMapping("/add")
+        public ResponseEntity<?> createAttendances(@RequestBody List<Attendance> attendances) {
+            try {
+                List<Attendance> savedAttendances = attendances.stream()
+                        .map(attendanceService::saveAttendance)
+                        .collect(Collectors.toList());
+
+                return ResponseEntity.ok(savedAttendances);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Lỗi khi lưu điểm danh: " + e.getMessage());
+            }
+        }
+
     }
-
-    // 🔹 Lấy danh sách điểm danh
-    @GetMapping
-    public ResponseEntity<List<AttendanceDTO>> getAllAttendances() {
-        return ResponseEntity.ok(attendanceService.getAllAttendances());
-    }
-
-    // 🔹 Lấy chi tiết điểm danh theo ID
-    @GetMapping("/{id}")
-    public ResponseEntity<AttendanceDTO> getAttendanceById(@PathVariable Long id) {
-        return attendanceService.getAttendanceById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // ✅ Sửa lỗi: Thêm API tạo điểm danh mới
-    @PostMapping
-    public ResponseEntity<AttendanceDTO> createAttendance(@RequestBody AttendanceDTO attendanceDTO) {
-        return ResponseEntity.ok(attendanceService.createAttendance(attendanceDTO));
-    }
-
-    // 🔹 Cập nhật trạng thái điểm danh
-    @PutMapping("/{id}/status")
-    public ResponseEntity<AttendanceDTO> updateAttendanceStatus(@PathVariable Long id, @RequestParam String status) {
-        return attendanceService.updateAttendanceStatus(id, status)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // 🔹 Xóa điểm danh
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAttendance(@PathVariable Long id) {
-        attendanceService.deleteAttendance(id);
-        return ResponseEntity.noContent().build();
-    }
-}
